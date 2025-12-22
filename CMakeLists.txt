@@ -21,21 +21,30 @@ FetchContent_Declare(
     googletest
     URL https://github.com/google/googletest/releases/download/v1.17.0/googletest-1.17.0.tar.gz
 )
+
 FetchContent_Declare(SFML
     GIT_REPOSITORY https://github.com/SFML/SFML.git
     GIT_TAG 3.0.2
     GIT_SHALLOW ON
     EXCLUDE_FROM_ALL
     SYSTEM)
+
 FetchContent_Declare(
     imgui
     GIT_REPOSITORY "https://github.com/ocornut/imgui.git"
     GIT_TAG        v1.91.5
 )
+
 FetchContent_Declare(
     imgui-sfml
     GIT_REPOSITORY https://github.com/SFML/imgui-sfml.git
     GIT_TAG        v3.0
+)
+
+FetchContent_Declare(
+    highfive
+    GIT_REPOSITORY https://github.com/highfive-devs/highfive.git
+    GIT_TAG        v3.2.0
 )
 
 option(SFML_BUILD_AUDIO "Build audio" OFF)
@@ -53,16 +62,16 @@ set(IMGUI_SFML_IMGUI_DIR ${imgui_SOURCE_DIR} CACHE PATH "" FORCE)
 
 FetchContent_MakeAvailable(imgui-sfml)
 
+# HighFive
+FetchContent_MakeAvailable(highfive)
+
 FetchContent_MakeAvailable(googletest)
 include(GoogleTest)
 add_subdirectory(tests)
 
 file(GLOB INC_FILES "inc/*.hpp")
 add_library(CppGeometry INTERFACE ${INC_FILES})
-target_include_directories(CppGeometry INTERFACE
-    ${imgui_SOURCE_DIR}
-    ${imgui-sfml_SOURCE_DIR}
-)
+
 
 file(GLOB RENDER_INC "inc/viz/*.h")
 file(GLOB RENDER_SRC "src/viz/*.cpp")
@@ -71,6 +80,14 @@ add_executable(
                 main.cpp
                 ${RENDER_INC}
                 ${RENDER_SRC}
+                ${highfive_SOURCE_DIR}
             )
 target_include_directories(Geometry PRIVATE ${imgui_SOURCE_DIR})
-target_link_libraries(Geometry PRIVATE CppGeometry ImGui-SFML::ImGui-SFML)
+target_link_libraries(Geometry PRIVATE CppGeometry ImGui-SFML::ImGui-SFML HighFive)
+
+add_custom_command(TARGET Geometry POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/res
+        $<TARGET_FILE_DIR:Geometry>/res
+    COMMENT "Copying resources to build directory"
+)
