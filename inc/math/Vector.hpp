@@ -162,7 +162,6 @@ float dot(const Vector<T, dim> &a, const Vector<T, dim> &b) {
 template <class T, size_t dim = DIM3>
 std::ostream &operator<<(std::ostream &os, const Vector<T, dim> &v) {
   os << "{";
-  bool first = true;
   for (int i = 0; i < dim; ++i) {
     if (i != 0)
       os << ", ";
