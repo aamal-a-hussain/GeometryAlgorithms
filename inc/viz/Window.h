@@ -7,7 +7,7 @@ namespace geom {
 namespace viz {
     class Renderer {
     public:
-        Renderer() {
+        Renderer() : convex_hull_points_(-1) {
             window_ = sf::RenderWindow(sf::VideoMode({kWidth, kHeight}), "Geometry Renderer");
             window_.setFramerateLimit(60);
             std::ignore = ImGui::SFML::Init(window_);
@@ -20,10 +20,14 @@ namespace viz {
             }
         }
 
+        void Clear_() {
+            shapes_.clear();
+        }
+
         void LoadData_(const char path[64]) {
-            auto p = std::string("res/") + path;
-            HighFive::File file (p, HighFive::File::ReadOnly);
-            auto dataset = file.getDataSet("points");
+            const auto p = path + std::string(".h5");
+            const HighFive::File file (p, HighFive::File::ReadOnly);
+            const auto dataset = file.getDataSet("points");
             auto data = dataset.read<std::vector<std::vector<float>>>();
             for (const auto& coords : data) {
                 auto c = sf::CircleShape(1.0);
@@ -35,20 +39,31 @@ namespace viz {
             }
         }
 
-        void Update() {
-            static char point_path[64] = "";
+        void SetupImGui_() {
             bool loadData = false;
             ImGui::SFML::Update(window_, clock_.restart());
             ImGui::Begin("Convex Hull Points");
-            ImGui::InputText("Filename (H5)", point_path, IM_ARRAYSIZE(point_path));
-            if (ImGui::Button("Generate points")) loadData = true;
-            if (loadData) LoadData_(point_path);
-            ImGui::End();
+            const auto preview = (convex_hull_points_ >=0) ? convex_hull_data_files[convex_hull_points_] : "Choose an option";
 
-            window_.clear();
-            for (const auto& shape : shapes_) {
-                window_.draw(*shape);
+            if (ImGui::BeginCombo("Filename", preview.data())) {
+                for (int n = 0; n < IM_ARRAYSIZE(convex_hull_data_files); ++n) {
+                    if (const auto filename = convex_hull_data_files[n].data(); ImGui::Selectable(filename, convex_hull_points_ == n)) {
+                        convex_hull_points_ = n;
+                    }
+                }
+                ImGui::EndCombo();
             }
+            if (ImGui::Button("Generate points")) loadData = true;
+            ImGui::SameLine();
+            if (ImGui::Button("Clear")) Clear_();
+            if (loadData && convex_hull_points_ >= 0) LoadData_(convex_hull_data_files[convex_hull_points_].data());
+            ImGui::End();
+        }
+
+        void Update() {
+            SetupImGui_();
+            window_.clear();
+            for (const auto& shape : shapes_) window_.draw(*shape);
 
             ImGui::SFML::Render(window_);
             window_.display();
@@ -65,11 +80,12 @@ namespace viz {
         public:
             static constexpr int kWidth = 640;
             static constexpr int kHeight = 640;
-
+            static constexpr std::string_view convex_hull_data_files[] = {"res/points"};
         private:
             std::vector<std::unique_ptr<sf::Shape>> shapes_;
-            sf::RenderWindow window_;
-            sf::Clock clock_;
+            sf::RenderWindow                        window_;
+            sf::Clock                               clock_;
+            int                                     convex_hull_points_;
     };
 }
 } // namespace geom
