@@ -7,13 +7,16 @@
 
 #include <cmath>
 
-namespace geom {
-namespace math {
-    static constexpr float TOLERANCE = 1e-6;
-    inline bool IsEqual(const double _x, const double _y){
-        return fabs(_x - _y) < TOLERANCE;
+
+namespace geom::math {
+    template <std::floating_point T>
+    bool IsEqual(const T _x, const T _y){
+        return std::abs(_x - _y) < std::numeric_limits<T>::epsilon() * 100;
     }
-} // namespace math
-} // namespace geom
+    inline bool _xor(const bool _a, const bool _b) {
+        return _a ^ _b;
+    }
+} // namespace geom::math
+
 
 #endif //CPPGEOMETRY_MATH_H
