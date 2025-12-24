@@ -14,8 +14,8 @@
 #include <stdexcept>
 #include <concepts>
 
-namespace geom {
-namespace math {
+
+namespace geom::math {
 static constexpr size_t DIM2 = 2;
 static constexpr size_t DIM3 = 3;
 

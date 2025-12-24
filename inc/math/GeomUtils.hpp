@@ -5,10 +5,9 @@
 #include "Vector.hpp"
 #include "Point.hpp"
 
-namespace geom
-{
 
-    namespace math
+
+namespace geom::math
     {
         enum class Orientation
         {
@@ -63,13 +62,13 @@ namespace geom
         inline bool Coincident2d(const Vector2f &a, const Vector2f &b)
         {
             const auto area = Area2d(a, b);
-            return IsEqual(area, 0.0);
+            return IsEqual(area, 0.0f);
         }
 
         inline bool Coincident3d(const Vector3f &a, const Vector3f &b)
         {
             const auto area = Area3d(a, b);
-            return IsEqual(area, 0.0);
+            return IsEqual(area, 0.0f);
         }
 
         inline Orientation Orientation2d(const Point2f &a, const Point2f &b, const Point2f &c)
@@ -83,7 +82,7 @@ namespace geom
             const Vector2f ac = c - a;
 
             auto area = Area2d(ab, ac);
-            if (IsEqual(area, 0.0))
+            if (IsEqual(area, 0.0f))
                 area = 0.0;
 
             if (area < 0)
@@ -107,7 +106,7 @@ namespace geom
                               });
         }
 
-    } // namespace math
-} // namespace geom
+    } // namespace geom::math
+
 
 #endif // CPPGEOMETRY_GEOMUTILS_H

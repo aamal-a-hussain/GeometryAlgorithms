@@ -4,8 +4,8 @@
 #include "Point.hpp"
 #include "Vector.hpp"
 #include <stdexcept>
-namespace geom {
-    namespace math {
+
+namespace geom::math {
     class Plane {
         Vector3f _normal;
         float _d;
@@ -37,6 +37,6 @@ namespace geom {
                 return _d;
             }
     };
-} // namespace math
-} // namespace geom
+} // namespace geom::math
+
 #endif //CPPGEOMETRY_PLANE_H
