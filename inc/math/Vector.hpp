@@ -25,7 +25,7 @@ template <std::floating_point T, size_t dim> requires (dim >= 2)
   std::array<T, dim> _coords;
 
 public:
-  Vector() = default;
+  Vector() : _coords{} {};
 
   explicit Vector(std::array<T, dim> coords) : _coords(coords){};
 
@@ -36,13 +36,13 @@ public:
   bool operator==(const Vector &other) const {
     return std::equal(
         _coords.begin(), _coords.end(), other._coords.begin(),
-        [](const auto &a, const auto &b) { return IsEqual(a, b); });
+        [](const auto &a, const auto &b) { return IsEqual<T>(a, b); });
   }
 
   bool operator==(const T other) const {
     return std::all_of(
         _coords.begin(), _coords.end(),
-        [other](const auto &a) { return IsEqual(a, other); });
+        [other](const auto &a) { return IsEqual<T>(a, other); });
   }
 
   bool operator!=(const Vector &other) const {
@@ -54,31 +54,31 @@ public:
   }
 
   Vector operator+(const Vector &other) const {
-    Vector result;
+    Vector result {};
     std::transform(_coords.begin(), _coords.end(), other._coords.begin(),
                    result._coords.begin(),
-                   [](const T &a, const T &b) { return a + b; });
+                   [](const T &a, const T &b) { return IsEqual<T>(a, 0) ? b : IsEqual<T>(b, 0) ? a : a + b; });
     return result;
   }
 
   Vector operator+(const T other) const {
-    Vector result;
+    Vector result {};
     std::transform(_coords.begin(), _coords.end(),
                    result._coords.begin(),
-                   [other](const T &a) { return a + other; });
+                   [other](const T &a) { return IsEqual<T>(a, 0) ? other : a + other; });
     return result;
   }
 
   Vector operator-(const Vector &other) const {
-    Vector result;
+    Vector result {};
     std::transform(_coords.begin(), _coords.end(), other._coords.begin(),
                    result._coords.begin(),
-                   [](const T &a, const T &b) { return a - b; });
+                   [](const T &a, const T &b) { return IsEqual<T>(a, 0) ? -b : IsEqual<T>(b, 0) ? a : a - b; });
     return result;
   }
 
   Vector operator-(const T other) const {
-    Vector result;
+    Vector result {};
     std::transform(_coords.begin(), _coords.end(),
                    result._coords.begin(),
                    [other](const T& a) { return a - other; });
@@ -86,9 +86,19 @@ public:
   }
 
   Vector operator-() const {
-    Vector result;
+    Vector result {};
     std::transform(_coords.begin(), _coords.end(), result._coords.begin(),
-                   [](const T &a) { return -a; });
+                   [](const T &a) { return IsEqual<T>(a, 0) ? 0 : -a; });
+    return result;
+  }
+
+  Vector operator*(T other) const {
+    Vector result {};
+    std::transform(
+      _coords.begin(), _coords.end(),
+      result._coords.begin(),
+      [other](const T &a) { return IsEqual<T>(a, 0) ? 0 : a * other; }
+      );
     return result;
   }
 
@@ -126,19 +136,20 @@ public:
   }
   void ToUnitVector() {
     float magnitude = Norm();
-    if (IsEqual(magnitude, 0.0)) throw std::runtime_error("Tried to normalize a vector with zero norm");
+    if (IsEqual<T>(magnitude, 0.0)) throw std::runtime_error("Tried to normalize a vector with zero norm");
     std::for_each(_coords.begin(), _coords.end(),
                   [magnitude](T &c) { c /= magnitude; });
   }
   [[nodiscard]] Vector Normalise() const {
-    std::array<T, dim> result;
+    std::array<T, dim> result {};
     float magnitude = Norm();
-    if (IsEqual(magnitude, 0.0)) throw std::runtime_error("Tried to normalize a vector with zero norm");
+    if (IsEqual<T>(magnitude, 0.0)) throw std::runtime_error("Tried to normalize a vector with zero norm");
     std::transform(_coords.begin(), _coords.end(), result.begin(),
                    [magnitude](const T &c) { return c / magnitude; });
-    return {result};
+    return Vector(result);
   }
-};
+
+  };
 
 template <class T, size_t dim = DIM3>
 float Dot(const Vector<T, dim> &a, const Vector<T, dim> &b) {
@@ -177,6 +188,6 @@ inline Vector3f Cross3D(const Vector3f &a, const Vector3f &b) {
   return {x, y, z};
 }
 
-} // namespace math
-} // namespace geom
+} // namespace geom::math
+
 #endif // CPPGEOMETRY_VECTOR_H
