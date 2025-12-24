@@ -29,11 +29,9 @@ public:
 
   explicit Vector(std::array<T, dim> coords) : _coords(coords){};
 
-  template <typename = std::enable_if<dim == 3>>
-  Vector(T x, T y, T z) : _coords({x, y, z}){};
+  Vector(T x, T y, T z) requires (dim == 3) : _coords({x, y, z}){};
 
-  template <typename = std::enable_if<dim == 2>>
-  Vector(T x, T y) : _coords({x, y}){};
+  Vector(T x, T y) requires (dim == 2) : _coords({x, y}){};
 
   bool operator==(const Vector &other) const {
     return std::equal(
