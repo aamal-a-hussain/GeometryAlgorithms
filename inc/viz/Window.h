@@ -51,8 +51,8 @@ namespace geom {
                 }
             }
 
-            void LoadData_(const char path[64]) {
-                const auto p = path + std::string(".h5");
+            void LoadData_(std::string_view path) {
+                const auto p = path.data() + std::string(".h5");
                 const HighFive::File file(p, HighFive::File::ReadOnly);
                 const auto dataset = file.getDataSet("points");
                 auto data = dataset.read<std::vector<std::array<float, 2> > >();
@@ -78,15 +78,15 @@ namespace geom {
 
                 if (ImGui::BeginCombo("Filename", preview.data())) {
                     for (int n = 0; n < IM_ARRAYSIZE(convex_hull_data_files); ++n) {
-                        if (const auto filename = convex_hull_data_files[n].data(); ImGui::Selectable(
-                            filename, convex_hull_points_ == n)) {
+                        if (const auto filename = convex_hull_data_files[n]; ImGui::Selectable(
+                            filename.data(), convex_hull_points_ == n)) {
                             convex_hull_points_ = n;
                         }
                     }
                     ImGui::EndCombo();
                 }
                 if (ImGui::Button("Generate points") && convex_hull_points_ >= 0) LoadData_(
-                    convex_hull_data_files[convex_hull_points_].data());
+                    convex_hull_data_files[convex_hull_points_]);
                 ImGui::SameLine();
                 if (ImGui::Button("Create Hull")) ComputeHull_();
                 ImGui::SameLine();
