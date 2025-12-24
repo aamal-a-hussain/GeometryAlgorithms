@@ -10,7 +10,7 @@
 namespace geom {
 namespace math {
     static constexpr float TOLERANCE = 1e-6;
-    inline bool isEqual(double _x, double _y){
+    inline bool IsEqual(const double _x, const double _y){
         return fabs(_x - _y) < TOLERANCE;
     }
 } // namespace math

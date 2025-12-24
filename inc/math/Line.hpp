@@ -18,8 +18,8 @@ public:
         }
       };
 
-  const inline Vector<T, dim>& getOrigin() { return origin; }
-  const inline Vector<T, dim>& getDir() { return dir; }
+  const inline Vector<T, dim>& GetOrigin() { return origin; }
+  const inline Vector<T, dim>& GetDir() { return dir; }
 };
 } // namespace math
 } // namespace geom

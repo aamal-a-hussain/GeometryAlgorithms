@@ -22,18 +22,18 @@ namespace geom {
                 if (p1 == p2 || p1 == p3 || p2 == p3) {
                     throw std::runtime_error("Require three unique points to define a plane");
                 }
-                Vector3f v12 = p2 - p1;
-                Vector3f v13 = p3 - p1;
+                const Vector3f v12 = p2 - p1;
+                const Vector3f v13 = p3 - p1;
 
-                _normal = cross3D(v12, v13);
-                _d = dot(_normal, p1);
+                _normal = Cross3D(v12, v13);
+                _d = Dot(_normal, p1);
             }
 
-            const Vector3f& get_normal() const {
+            const Vector3f& GetNormal() const {
                 return _normal;
             }
 
-            const float& get_d() const {
+            const float& GetD() const {
                 return _d;
             }
     };

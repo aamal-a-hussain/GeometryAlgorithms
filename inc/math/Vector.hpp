@@ -12,24 +12,22 @@
 #include <ostream>
 #include <ranges>
 #include <stdexcept>
-#include <type_traits>
+#include <concepts>
 
 namespace geom {
 namespace math {
 static constexpr size_t DIM2 = 2;
 static constexpr size_t DIM3 = 3;
 
-template <class T, size_t dim> class Vector {
-  static_assert(std::is_arithmetic_v<T>, "Vector class must be arithmetic");
-  static_assert(dim >= DIM2,
-                "Vector dimension must be at least two dimensional");
+template <std::floating_point T, size_t dim> requires (dim >= 2)
+  class Vector {
 
   std::array<T, dim> _coords;
 
 public:
   Vector() = default;
 
-  Vector(std::array<T, dim> coords) : _coords(coords){};
+  explicit Vector(std::array<T, dim> coords) : _coords(coords){};
 
   template <typename = std::enable_if<dim == 3>>
   Vector(T x, T y, T z) : _coords({x, y, z}){};
@@ -40,13 +38,13 @@ public:
   bool operator==(const Vector &other) const {
     return std::equal(
         _coords.begin(), _coords.end(), other._coords.begin(),
-        [](const auto &a, const auto &b) { return isEqual(a, b); });
+        [](const auto &a, const auto &b) { return IsEqual(a, b); });
   }
 
   bool operator==(const T other) const {
     return std::all_of(
         _coords.begin(), _coords.end(),
-        [other](const auto &a) { return isEqual(a, other); });
+        [other](const auto &a) { return IsEqual(a, other); });
   }
 
   bool operator!=(const Vector &other) const {
@@ -102,47 +100,42 @@ public:
     return _coords[idx];
   }
 
-  void set(size_t idx, T value) {
-    if (idx >= dim)
-      throw std::out_of_range("Vector index out of range");
-    _coords[idx] = value;
-  }
 
-  [[nodiscard]] inline T x() const
+  [[nodiscard]] T x() const
     requires(dim <= DIM3)
   {
     return _coords[0];
   }
 
-  [[nodiscard]] inline T y() const
+  [[nodiscard]] T y() const
     requires(dim <= DIM3)
   {
     return _coords[1];
   }
 
-  [[nodiscard]] inline T z() const
+  [[nodiscard]] T z() const
     requires(dim == DIM3)
   {
     return _coords[2];
   }
 
-  [[nodiscard]] float norm() const {
+  [[nodiscard]] float Norm() const {
     auto squares_view =
         _coords | std::views::transform([](T n) { return n * n; });
-    float result =
+    const float result =
         std::accumulate(squares_view.begin(), squares_view.end(), 0.0);
     return sqrt(result);
   }
-  void to_unit_vector() {
-    float magnitude = norm();
-    if (isEqual(magnitude, 0.0)) throw std::runtime_error("Tried to normalize a vector with zero norm");
+  void ToUnitVector() {
+    float magnitude = Norm();
+    if (IsEqual(magnitude, 0.0)) throw std::runtime_error("Tried to normalize a vector with zero norm");
     std::for_each(_coords.begin(), _coords.end(),
                   [magnitude](T &c) { c /= magnitude; });
   }
-  [[nodiscard]] Vector normalize() const {
+  [[nodiscard]] Vector Normalise() const {
     std::array<T, dim> result;
-    float magnitude = norm();
-    if (isEqual(magnitude, 0.0)) throw std::runtime_error("Tried to normalize a vector with zero norm");
+    float magnitude = Norm();
+    if (IsEqual(magnitude, 0.0)) throw std::runtime_error("Tried to normalize a vector with zero norm");
     std::transform(_coords.begin(), _coords.end(), result.begin(),
                    [magnitude](const T &c) { return c / magnitude; });
     return {result};
@@ -150,7 +143,7 @@ public:
 };
 
 template <class T, size_t dim = DIM3>
-float dot(const Vector<T, dim> &a, const Vector<T, dim> &b) {
+float Dot(const Vector<T, dim> &a, const Vector<T, dim> &b) {
   float result = 0;
   for (size_t i = 0; i < dim; i++) {
     result += a[i] * b[i];
@@ -174,16 +167,16 @@ std::ostream &operator<<(std::ostream &os, const Vector<T, dim> &v) {
 typedef Vector<float, DIM2> Vector2f;
 typedef Vector<float, DIM3> Vector3f;
 
-inline float cross2D(const Vector2f &a, const Vector2f &b) {
+inline float Cross2D(const Vector2f &a, const Vector2f &b) {
   return a.x() * b.y() - a.y() * b.x();
 }
 
-inline Vector3f cross3D(const Vector3f &a, const Vector3f &b) {
+inline Vector3f Cross3D(const Vector3f &a, const Vector3f &b) {
   float x = a.y() * b.z() - a.z() * b.y();
   float y = a.z() * b.x() - a.x() * b.z();
   float z = a.x() * b.y() - a.y() * b.x();
 
-  return Vector<float, 3>(x, y, z);
+  return {x, y, z};
 }
 
 } // namespace math

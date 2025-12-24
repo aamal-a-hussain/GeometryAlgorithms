@@ -50,40 +50,40 @@ namespace geom
             return os;
         }
 
-        float area2d(const Vector2f &a, const Vector2f &b)
+        inline float Area2d(const Vector2f &a, const Vector2f &b)
         {
-            return cross2D(a, b) / 2;
+            return Cross2D(a, b) / 2;
         }
 
-        float area3d(const Vector3f &a, const Vector3f &b)
+        inline float Area3d(const Vector3f &a, const Vector3f &b)
         {
-            return cross3D(a, b).norm() / 2;
+            return Cross3D(a, b).Norm() / 2;
         }
 
-        bool coincident2d(const Vector2f &a, const Vector2f &b)
+        inline bool Coincident2d(const Vector2f &a, const Vector2f &b)
         {
-            auto area = area2d(a, b);
-            return isEqual(area, 0.0);
+            const auto area = Area2d(a, b);
+            return IsEqual(area, 0.0);
         }
 
-        bool coincident3d(const Vector3f &a, const Vector3f &b)
+        inline bool Coincident3d(const Vector3f &a, const Vector3f &b)
         {
-            auto area = area3d(a, b);
-            return isEqual(area, 0.0);
+            const auto area = Area3d(a, b);
+            return IsEqual(area, 0.0);
         }
 
-        Orientation orientation2d(const Point2f &a, const Point2f &b, const Point2f &c)
+        inline Orientation Orientation2d(const Point2f &a, const Point2f &b, const Point2f &c)
         {
             if (a == c)
                 return Orientation::ORIGIN;
             if (b == c)
                 return Orientation::DESTINATION;
 
-            Vector2f ab = b - a;
-            Vector2f ac = c - a;
+            const Vector2f ab = b - a;
+            const Vector2f ac = c - a;
 
-            auto area = area2d(ab, ac);
-            if (isEqual(area, 0.0))
+            auto area = Area2d(ab, ac);
+            if (IsEqual(area, 0.0))
                 area = 0.0;
 
             if (area < 0)
@@ -92,12 +92,19 @@ namespace geom
                 return Orientation::POSITIVE;
 
             // Vectors are coincident
-            if (dot(ab, ac) < 0)
+            if (Dot(ab, ac) < 0)
                 return Orientation::BEHIND;
-            if (ab.norm() < ac.norm())
+            if (ab.Norm() < ac.Norm())
                 return Orientation::BEYOND;
 
             return Orientation::IN_INTERVAL;
+        }
+
+        inline void LexicographicOrder(std::vector<math::Point2f>& points) {
+            std::ranges::sort(points
+                              , [](const Point2f &a, const Point2f &b) {
+                                  return (a.x() < b.x()) || (IsEqual(a.x(), b.x()) && a.y() < b.y());
+                              });
         }
 
     } // namespace math
